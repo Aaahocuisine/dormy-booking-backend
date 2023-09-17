@@ -2,6 +2,7 @@ package com.dormy.controllers;
 
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,19 +30,26 @@ public class ImageController {
 		return "check is Ok !!";
 	}
 	
-	@PostMapping
-	public ResponseEntity<?> uploadImage(@RequestParam("image")MultipartFile file) throws IOException {
-		String uploadImage = imageService.uploadImage(file);
-		return ResponseEntity.status(HttpStatus.OK)
-				.body(uploadImage);
-	}
-
-	@GetMapping("/{fileName}")
-	public ResponseEntity<?> downloadImage(@PathVariable String fileName){
-		byte[] imageData=imageService.downloadImage(fileName);
-		return ResponseEntity.status(HttpStatus.OK)
-				.contentType(MediaType.valueOf("image/png"))
-				.body(imageData);
-
-	}
+//	@PostMapping
+//	public ResponseEntity<?> uploadImage(@RequestParam("image")MultipartFile file) throws IOException {
+//		String uploadImage = imageService.uploadImage(file);
+//		return ResponseEntity.status(HttpStatus.OK)
+//				.body(uploadImage);
+//	}
+//	
+//	@PostMapping("/multiImage")
+//	public ResponseEntity<?> uploadListOfImage(@RequestParam("image")List<MultipartFile> file) throws IOException {
+//		String uploadImage = imageService.uploadListOfImage(file);
+//		return ResponseEntity.status(HttpStatus.OK)
+//				.body(uploadImage);
+//	}
+//
+//	@GetMapping("/{fileName}")
+//	public ResponseEntity<?> downloadImage(@PathVariable String fileName){
+//		byte[] imageData=imageService.downloadImage(fileName);
+//		return ResponseEntity.status(HttpStatus.OK)
+//				.contentType(MediaType.valueOf("image/png"))
+//				.body(imageData);
+//
+//	}
 }

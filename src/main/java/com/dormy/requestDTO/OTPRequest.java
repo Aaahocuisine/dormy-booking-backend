@@ -1,4 +1,4 @@
-package com.dormy.models;
+package com.dormy.requestDTO;
 
 public class OTPRequest {
 

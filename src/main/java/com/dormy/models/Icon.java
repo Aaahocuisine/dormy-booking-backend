@@ -12,17 +12,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Data
+@Entity
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="Prop_Image")
-@Builder
-public class PropertyImage {
+@Table(name ="icon_details")
+public class Icon {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long imageId;
+	private long iconId;
 	private String name;
 	private String type;
 	private long propertyNo;

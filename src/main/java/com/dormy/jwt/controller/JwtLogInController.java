@@ -40,6 +40,10 @@ public class JwtLogInController {
 	
 	private UserService userService;
 
+	@GetMapping("/check")
+	public String check() {
+		return "Check is Ok ";
+	}
 	
 	@RequestMapping(value ="/token",method =RequestMethod.POST)
 	public ResponseEntity<?> generateToken(@RequestBody JwtRequest jwtRequest) throws Exception{

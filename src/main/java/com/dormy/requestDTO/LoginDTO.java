@@ -1,4 +1,4 @@
-package com.dormy.dtos;
+package com.dormy.requestDTO;
 
 public class LoginDTO {
 	private String userid;

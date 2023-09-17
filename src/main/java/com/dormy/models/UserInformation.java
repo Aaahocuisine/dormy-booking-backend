@@ -12,11 +12,13 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.UniqueElements;
 
+import com.dormy.constant.OtpStatus;
+
 import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "user")
+@Table(name = "USER_DETAILS")
 public class UserInformation {
 
 	@Id
@@ -28,12 +30,13 @@ public class UserInformation {
 	private String firstName;
 	@NotNull
 	private String lastName;
+	@NotNull
 	private String password;
-	@Column(unique=true)
-	@Email(message =" Please provide valid Email !!")
-	private String email;
+
+	private String otpStatus;
+	
 	private String role;
-	private String geoLocation;
+
 
 //	mobile_no   (Userid)
 //	f_name

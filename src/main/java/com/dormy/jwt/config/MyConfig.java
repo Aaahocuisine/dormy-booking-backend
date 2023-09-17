@@ -37,7 +37,9 @@ public class MyConfig extends WebSecurityConfigurerAdapter {
 	            .antMatchers(
 	                    "/login/**",
 	                    "/register",
-	                    "/register/**"
+	                    "/register/**",
+	                    "/image/**",
+	                    "/property/**"
 	            ).permitAll()
 	            .anyRequest().authenticated()
 	            .and ()

@@ -8,10 +8,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import com.dormy.dtos.UserDTO;
+import com.dormy.constant.OtpStatus;
+import com.dormy.exception.DormyServiceCustomException;
 import com.dormy.jwt.models.ForgotRequest;
 import com.dormy.models.UserInformation;
 import com.dormy.repos.UserRepository;
+import com.dormy.requestDTO.UserDTO;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 
@@ -29,63 +31,73 @@ public class UserService {
 
 	public UserInformation saveUser(UserDTO userDTO) {
 		try {
+
+			if (!userDTO.getPassword().equals(userDTO.getRePassword()))
+				throw new DormyServiceCustomException("Password Not Matched !", "PASSWORD_NOT_MATCHED");
+
 			UserInformation user = new UserInformation();
-			user.setEmail(userDTO.getEmail());
 			user.setFirstName(userDTO.getFirstName());
-			user.setGeoLocation(userDTO.getGeoLocation());
 			user.setLastName(userDTO.getLastName());
 			user.setMobileNo(userDTO.getMobileNo());
 			user.setPassword(userDTO.getPassword());
-			user.setRole(userDTO.getRole());
+			user.setOtpStatus("NOT_VERIFIED");
 
 			// UserInformation checkResult = userRepository.save(user);
 			return userRepository.save(user);
 
 		} catch (DataIntegrityViolationException e) {
-			throw new RuntimeException("Email already registered");
+			throw new DormyServiceCustomException("Mobile No already registered", "USER_ALREADY_EXIST");
 		}
+	}
+
+	public void updateOTPStatus(String mobileNo) {
+		UserInformation user = userRepository.findByMobileNo(mobileNo);
+		if (user == null)
+			throw new DormyServiceCustomException("User not found", "DETAILS_NOT_AVAILABLE");
+		if (user.getOtpStatus().equals("NOT_VERIFIED"))
+			user.setOtpStatus("VERIFIED");
+
+		userRepository.save(user);
+
 	}
 
 	public List<UserInformation> getAllUser() {
 		return userRepository.findAll();
 	}
 
-	public UserInformation getUserByEmail(String email) {
-		return userRepository.findByEmail(email);
-	}
+//	public UserInformation getUserByEmail(String email) {
+//		return userRepository.findByEmail(email);
+//	}
 
 	public UserInformation getUserByMobileNo(String mobileNo) {
 		return userRepository.findByMobileNo(mobileNo);
 	}
 
-	public UserInformation updatePassword(ForgotRequest request) {
-		UserInformation user = userRepository.findByEmail(request.getUsername());
-		user.setPassword(request.getPassword());
+//	public UserInformation updatePassword(ForgotRequest request) {
+//		UserInformation user = userRepository.findByEmail(request.getUsername());
+//		user.setPassword(request.getPassword());
+//
+//		return userRepository.save(user);
+//	}
 
-		return userRepository.save(user);
-	}
-	
-	 public String sendOtp(String recipientPhoneNumber) {
-	    	Random random = new Random();
-	        StringBuilder otpCode = new StringBuilder();
+	public String sendOtp(String recipientPhoneNumber) {
+		Random random = new Random();
+		StringBuilder otpCode = new StringBuilder();
 
-	        for (int i = 0; i < 4; i++) {
-	            int digit = random.nextInt(10); // Generate a random digit (0-9)
-	            otpCode.append(digit);
-	        }
-	        otpCode.toString();
-	    	
+		for (int i = 0; i < 4; i++) {
+			int digit = random.nextInt(10); // Generate a random digit (0-9)
+			otpCode.append(digit);
+		}
+		otpCode.toString();
+
 //	        Message.creator(new PhoneNumber(recipientPhoneNumber), new PhoneNumber(twilioPhoneNumber),
 //	                "Your OTP code is: " + otpCode)
 //	                .create(twilioRestClient);
-	        
-	        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-		      Message.creator(
-		        new com.twilio.type.PhoneNumber(recipientPhoneNumber),
-		        new com.twilio.type.PhoneNumber(twilioPhoneNumber),
-		        otpCode.toString())
-		      .create();
-		      
-		      return otpCode.toString();
-	    }
+
+		Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+		Message.creator(new com.twilio.type.PhoneNumber(recipientPhoneNumber),
+				new com.twilio.type.PhoneNumber(twilioPhoneNumber), otpCode.toString()).create();
+
+		return otpCode.toString();
+	}
 }

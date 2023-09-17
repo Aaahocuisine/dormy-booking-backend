@@ -1,38 +1,58 @@
 package com.dormy.services;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.dormy.exception.DormyServiceCustomException;
 import com.dormy.models.PropertyImage;
 import com.dormy.repos.ImageRepo;
 
 @Service
 public class ImageService {
-	
+
 	@Autowired
 	private ImageRepo imageRepo;
-	
-	public String uploadImage (MultipartFile file) throws IOException {
 
-		PropertyImage image = new PropertyImage();
-		image.setName(file.getOriginalFilename());
-		image.setType(file.getContentType());
-		image.setImageData(file.getBytes());
-		PropertyImage imageResponse=imageRepo.save(image);
-		if(imageResponse!=null) {
-			return "File is save properly !!!";
+	public void uploadIcon(MultipartFile file, long propertyNo) throws IOException {
+		try {
+			PropertyImage image = PropertyImage.builder()
+					.name(file.getOriginalFilename())
+					.type(file.getContentType())
+					.imageData(file.getBytes())
+					.propertyNo(propertyNo)
+					.build();
+
+			imageRepo.save(image);
+
+		} catch (Exception e) {
+			throw new DormyServiceCustomException("Failed to save Icon", "ICON_SAVE_FAILED");
+		}
+
+	}
+
+	public void uploadListOfImage(List<MultipartFile> fileList, long propertyNo) throws IOException {
+
+		try {
+		for (MultipartFile file : fileList) {
+			PropertyImage image = PropertyImage.builder().name(file.getOriginalFilename()).type(file.getContentType())
+					.imageData(file.getBytes()).propertyNo(propertyNo).build();
+
+			imageRepo.save(image);
+		}
+		} catch (Exception e) {
+			throw new DormyServiceCustomException("Failed to save Iamge", "IMAGE_SAVE_FAILED");
 		}
 		
-	    return "Not Saved";
 	}
-	
-	public byte[] downloadImage(String fileName){
-        Optional<PropertyImage> dbImageData = imageRepo.findByName(fileName);
-        byte[] images=dbImageData.get().getImageData();
-        return images;
-    }
+
+	public byte[] downloadImage(long propertyNo) {
+		Optional<PropertyImage> dbImageData = imageRepo.findByPropertyNo(propertyNo);
+		byte[] images = dbImageData.get().getImageData();
+		return images;
+	}
 }

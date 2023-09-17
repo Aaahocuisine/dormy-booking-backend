@@ -15,16 +15,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.dormy.dtos.PropertyDTO;
 import com.dormy.models.Property;
+import com.dormy.requestDTO.PropertyDTO;
 import com.dormy.services.PropertyService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
-@RequestMapping("/api/property")
+@RequestMapping("/property")
 public class PropertyController {
 
 	@Autowired
-	public PropertyService propertService;
+	private PropertyService propertService;
+	
+	@Autowired
+	private ObjectMapper mapper;
 
 	@GetMapping(value="/check")
 	public String check() {
@@ -32,18 +36,19 @@ public class PropertyController {
 	}
 
 	@PostMapping
-	public ResponseEntity<?> save(@RequestBody PropertyDTO propertyDTO) {
-		System.out.println(propertyDTO);
-		Property property = propertService.save(propertyDTO);
+	public ResponseEntity<?> save(
+			@RequestParam("property") String propertyDTO,
+			@RequestParam("images") List<MultipartFile> images,
+			@RequestParam("icon") MultipartFile icon
+			) throws IOException {
+		
+		PropertyDTO propertyMapped = mapper.readValue(propertyDTO, PropertyDTO.class);
+		System.out.println(propertyMapped);
+		Property property = propertService.save(propertyMapped,images,icon);
 		return ResponseEntity.ok().body(property);
 	}
 	
-//	@PostMapping
-//	public ResponseEntity<?> save(@RequestBody PropertyDTO propertyDTO ,@RequestParam("file") MultipartFile file) throws IOException {
-//		System.out.println(propertyDTO);
-//		propertService.save(propertyDTO,file);
-//		return ResponseEntity.ok().body("Saved the property !!");
-//	}
+
 
 	@GetMapping
 	public ResponseEntity<?> getAll() {
