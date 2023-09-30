@@ -6,6 +6,7 @@ import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.dormy.constant.OtpStatus;
@@ -14,6 +15,7 @@ import com.dormy.jwt.models.ForgotRequest;
 import com.dormy.models.UserInformation;
 import com.dormy.repos.UserRepository;
 import com.dormy.requestDTO.UserDTO;
+import com.dormy.responseDTO.SuccessResponse;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 
@@ -33,7 +35,7 @@ public class UserService {
 		try {
 
 			if (!userDTO.getPassword().equals(userDTO.getRePassword()))
-				throw new DormyServiceCustomException("Password Not Matched !", "PASSWORD_NOT_MATCHED");
+				throw new DormyServiceCustomException("Password Not Matched !");
 
 			UserInformation user = new UserInformation();
 			user.setFirstName(userDTO.getFirstName());
@@ -41,23 +43,24 @@ public class UserService {
 			user.setMobileNo(userDTO.getMobileNo());
 			user.setPassword(userDTO.getPassword());
 			user.setOtpStatus("NOT_VERIFIED");
-
-			// UserInformation checkResult = userRepository.save(user);
+			user.setRole(userDTO.getRole());
 			return userRepository.save(user);
 
+			// UserInformation checkResult = userRepository.save(user);
+
 		} catch (DataIntegrityViolationException e) {
-			throw new DormyServiceCustomException("Mobile No already registered", "USER_ALREADY_EXIST");
+			throw new DormyServiceCustomException("Mobile No already registered");
 		}
 	}
 
-	public void updateOTPStatus(String mobileNo) {
+	public UserInformation updateOTPStatus(String mobileNo) {
 		UserInformation user = userRepository.findByMobileNo(mobileNo);
 		if (user == null)
-			throw new DormyServiceCustomException("User not found", "DETAILS_NOT_AVAILABLE");
+			throw new DormyServiceCustomException("User not found");
 		if (user.getOtpStatus().equals("NOT_VERIFIED"))
 			user.setOtpStatus("VERIFIED");
 
-		userRepository.save(user);
+		return userRepository.save(user);
 
 	}
 

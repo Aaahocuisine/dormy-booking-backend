@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="Prop_Image")
+@Table(name="Property_Image")
 @Builder
 public class PropertyImage {
 	

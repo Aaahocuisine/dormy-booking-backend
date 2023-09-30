@@ -13,8 +13,10 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 	@ExceptionHandler(DormyServiceCustomException.class)
 	public ResponseEntity<ErrorResponse> handleProductServiceException(DormyServiceCustomException exception){
 		return new ResponseEntity<>(new ErrorResponse().builder()
-				.errorMessage(exception.getMessage())
-				.errorCode(exception.getErrorCode())
+				.message(exception.getMessage())
+				.error(true)
+				.success(false)
+				.data(exception.getData())
 				.build(),HttpStatus.NOT_FOUND);
 	}
 }

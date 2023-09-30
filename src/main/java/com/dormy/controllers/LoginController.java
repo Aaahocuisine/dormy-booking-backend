@@ -4,9 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.ReportAsSingleViolation;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,24 +22,32 @@ import com.dormy.jwt.models.ForgotRequest;
 import com.dormy.models.UserInformation;
 import com.dormy.requestDTO.OTPRequest;
 import com.dormy.requestDTO.UserDTO;
+import com.dormy.responseDTO.SuccessResponse;
 import com.dormy.services.UserService;
 
 @RestController
-@RequestMapping("/register")
-public class RegisterController {
+@RequestMapping("/login")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
+public class LoginController {
 
 	@Autowired
 	private UserService userService;
 
-	@PostMapping
-	public ResponseEntity<?> saveUser(@RequestBody UserDTO userDTO) {
+	private final Map<String, String> otpMap = new HashMap<>();
+	
+	@PostMapping("/register")
+	public ResponseEntity<SuccessResponse> saveUser(@RequestBody UserDTO userDTO) {
 
-		try {
-			userService.saveUser(userDTO);
-			return ResponseEntity.ok("User registered successfully");
-		} catch (RuntimeException e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
+		UserInformation user =userService.saveUser(userDTO);
+		String otp = userService.sendOtp(userDTO.getMobileNo());
+		otpMap.put(userDTO.getMobileNo(), otp);
+		SuccessResponse response= SuccessResponse.builder()
+				.error(false).success(true)
+				.message("User is Successfully Registered !!")
+				.data(user)
+				.build();
+		return ResponseEntity.ok().body(response);
+		
 	}
 
 	@GetMapping
@@ -46,7 +57,7 @@ public class RegisterController {
 	}
 
 	@GetMapping("/{mobileNo}")
-	public ResponseEntity<?> getUserByEmial(@PathVariable String mobile) {
+	public ResponseEntity<?> getUserByEmial(@PathVariable("mobileNo") String mobile) {
 		UserInformation user = userService.getUserByMobileNo(mobile);
 		return ResponseEntity.ok().body(user);
 	}
@@ -55,50 +66,53 @@ public class RegisterController {
 	public ResponseEntity<String> updatePassword(@RequestBody UserDTO request) {
 		UserInformation user = userService.getUserByMobileNo(request.getMobileNo());
 		if (user == null)
-			throw new DormyServiceCustomException("User not found", "DETAILS_NOT_AVAILABLE");
+			throw new DormyServiceCustomException("User not found");
 		if (!request.getOtp().equals("VERIFIED")) {
-			throw new DormyServiceCustomException("User not Verified", "USER_NOT_VERIFIED");
+			throw new DormyServiceCustomException("User not Verified");
 		} else {
-			
+
 			return ResponseEntity.ok().body("Password Reset Done");
 		}
 
 	}
 
-	private final Map<String, String> otpMap = new HashMap<>();
+
 
 	@PostMapping("/generateOTP")
-	public ResponseEntity<?> getUserMobile(@RequestBody UserDTO request) {
+	public ResponseEntity<SuccessResponse> getUserMobile(@RequestBody UserDTO request) {
 		UserInformation user = userService.getUserByMobileNo(request.getMobileNo());
-		if (user != null)
-			throw new DormyServiceCustomException("User Not Exist !", "USER_NOT_FOUND");
-			// generate otp
-			String otp = userService.sendOtp(request.getMobileNo());
-			otpMap.put(request.getMobileNo(), otp);
-			System.out.println(otpMap);
+		if (user == null)
+			throw new DormyServiceCustomException("User Not Exist !");
+		// generate otp
+		String otp = userService.sendOtp(request.getMobileNo());
+		otpMap.put(request.getMobileNo(), otp);
+		System.out.println(otpMap);
 
-			return ResponseEntity.ok().body("OTP send !!");
-		
+		SuccessResponse respone = SuccessResponse.builder()
+				.error(false).success(true).message("OTP Send").data(request.getMobileNo()).build();
+		return ResponseEntity.ok().body(respone);
+
 	}
 
 	@PostMapping("/validateOTP")
-	public ResponseEntity<?> validateOTP(@RequestBody UserDTO request) {
+	public ResponseEntity<SuccessResponse> validateOTP(@RequestBody UserDTO request) {
 		if (otpMap.isEmpty())
-			throw new DormyServiceCustomException("Please Send OTP", "OTP_NOT_FOUND");
+			throw new DormyServiceCustomException("Please Send OTP");
 
 		UserInformation user = userService.getUserByMobileNo(request.getMobileNo());
 		if (user == null)
-			throw new DormyServiceCustomException("User Not Exist !", "USER_NOT_FOUND");
+			throw new DormyServiceCustomException("User Not Exist !");
 
 		// verified otp
 		System.out.println(otpMap.get(request.getMobileNo()));
 		System.out.println(request.getOtp());
 		if (!otpMap.get(request.getMobileNo()).equals(request.getOtp()))
-			throw new DormyServiceCustomException("OTP is Not Matched !!", "OTP_NOT_MATCH");
+			throw new DormyServiceCustomException("OTP is Not Matched !!");
 
-		userService.updateOTPStatus(request.getMobileNo());
+		UserInformation result =userService.updateOTPStatus(request.getMobileNo());
 		System.out.println(otpMap);
-		return ResponseEntity.ok().body("OTP Verified !!");
+		SuccessResponse response = SuccessResponse.builder().error(false).success(true).message("OTP Verified").data(result).build();
+		return ResponseEntity.ok().body(response);
 
 	}
 

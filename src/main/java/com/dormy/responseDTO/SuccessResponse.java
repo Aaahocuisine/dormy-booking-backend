@@ -1,4 +1,4 @@
-package com.dormy.exception;
+package com.dormy.responseDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,12 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ErrorResponse {
-
+public class SuccessResponse {
+	
 	private String message;
 	private boolean success;
 	private boolean error;
 	private Object data;
-	
-	
 }

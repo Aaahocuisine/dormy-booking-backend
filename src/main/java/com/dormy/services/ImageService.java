@@ -30,7 +30,7 @@ public class ImageService {
 			imageRepo.save(image);
 
 		} catch (Exception e) {
-			throw new DormyServiceCustomException("Failed to save Icon", "ICON_SAVE_FAILED");
+			throw new DormyServiceCustomException("Failed to save Icon");
 		}
 
 	}
@@ -45,7 +45,7 @@ public class ImageService {
 			imageRepo.save(image);
 		}
 		} catch (Exception e) {
-			throw new DormyServiceCustomException("Failed to save Iamge", "IMAGE_SAVE_FAILED");
+			throw new DormyServiceCustomException("Failed to save Iamge");
 		}
 		
 	}

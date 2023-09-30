@@ -13,7 +13,7 @@ import lombok.Data;
 public class PropertyDTO {
 
 	private int propertyId;
-	private long propertyNo;
+	private Long propertyNo;
 	private String propertyName;
 	private String address1;
 	private String address2;
